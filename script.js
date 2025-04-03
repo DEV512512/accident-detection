@@ -31,10 +31,12 @@ async function connectToESP32() {
 }
 
 function handleNotification(event) {
-    const decoder = new TextDecoder("utf-8");
+    const decoder = new TextDecoder('utf-8');
     const msg = decoder.decode(event.target.value);
-    console.log("📥 Received:", msg);
+    console.log("📥 Received from ESP32:", msg);  // <-- Add this debug log
+    log('📥 ' + msg);
 
-    const messagesDiv = document.getElementById("messages");
-    messagesDiv.innerHTML += `📢 ${msg}<br>`;
+    if (msg.includes("ACCIDENT")) {
+        sendSMSWithLocation(msg);
+    }
 }
