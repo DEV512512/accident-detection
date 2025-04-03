@@ -8,40 +8,30 @@ document.getElementById('connectBtn').addEventListener('click', async () => {
             filters: [{ namePrefix: 'ESP32' }],
             optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
         });
-
-        if (!bleDevice) {
-            log('⚠️ No device selected. Please try again.');
-            return;
-        }
-
-        log('🔗 Connecting to ESP32 BLE...');
+        
         const server = await bleDevice.gatt.connect();
         const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
         bleCharacteristic = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
 
-        bleCharacteristic.startNotifications();
+        await bleCharacteristic.startNotifications();
         bleCharacteristic.addEventListener('characteristicvaluechanged', handleNotification);
 
-        log('✅ Connected to ESP32 BLE');
+        log('✅ Connected to ESP32 BLE. Waiting for data...');
     } catch (err) {
-        if (err.name === "NotFoundError") {
-            log('⚠️ No device selected. Please try again.');
-            alert("No device selected. Please try again.");
-        } else {
-            log('❌ ' + err.message);
-        }
+        log('❌ ' + err);
     }
 });
 
 function handleNotification(event) {
     const decoder = new TextDecoder('utf-8');
     const msg = decoder.decode(event.target.value);
-    log('📥 ' + msg);
+    log('📥 Data received: ' + msg);
 
     if (msg.includes("ACCIDENT")) {
         sendSMSWithLocation(msg);
     }
 }
+
 
 function log(message) {
     const p = document.createElement('div');
