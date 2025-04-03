@@ -8,6 +8,13 @@ document.getElementById('connectBtn').addEventListener('click', async () => {
             filters: [{ namePrefix: 'ESP32' }],
             optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
         });
+
+        if (!bleDevice) {
+            log('⚠️ No device selected. Please try again.');
+            return;
+        }
+
+        log('🔗 Connecting to ESP32 BLE...');
         const server = await bleDevice.gatt.connect();
         const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
         bleCharacteristic = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
@@ -17,7 +24,12 @@ document.getElementById('connectBtn').addEventListener('click', async () => {
 
         log('✅ Connected to ESP32 BLE');
     } catch (err) {
-        log('❌ ' + err);
+        if (err.name === "NotFoundError") {
+            log('⚠️ No device selected. Please try again.');
+            alert("No device selected. Please try again.");
+        } else {
+            log('❌ ' + err.message);
+        }
     }
 });
 
